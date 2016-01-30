@@ -15,12 +15,7 @@ namespace FolderSync
         /// <returns></returns>
         private static string format_addr(string str)
         {
-            str = str.Replace("/", "\\");
-            if (str.Substring(str.Length - 1, 1) == "\\")
-            {
-                return str.Substring(0, str.Length - 1);
-            }
-            return str;
+            return str.Replace("/", "\\").TrimEnd('\\');
         }
         
         /// <summary>
@@ -119,7 +114,7 @@ namespace FolderSync
         private Dictionary<string, string> local_list;
         private int _max_commit_available;
         #endregion
-
+        #region global
         /// <summary>
         /// 保存/GLOBAL设置
         /// </summary>
@@ -165,6 +160,17 @@ namespace FolderSync
                 local_list.Add(item.KeyName, item.Value.Trim('\"'));
 
         }
+
+        #endregion
+
+        #region log
+        public enum LogType
+	    {
+            DEBUG,WARN,ERROR
+	    }
+        public delegate void LoggerHandler(LogType type, string msg);
+        public event LoggerHandler Log;
+        #endregion
         public repo(string path)
         {
             _phys_addr = format_addr(path);

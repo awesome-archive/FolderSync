@@ -14,6 +14,7 @@ namespace FolderSync
 
         }
 
+        /*
         public SortedList<string,commit_list_data> Get_commit_file(string commit_SHA)
         {
             SortedList<string, commit_list_data> ret = new SortedList<string, commit_list_data>();
@@ -39,7 +40,7 @@ namespace FolderSync
 
             return ret;
         }
-
+        */
         #region /commit/commitList
         public struct commit_list_data
         {
@@ -48,10 +49,6 @@ namespace FolderSync
             public int stat;
         }
         private List<commit_list_data> _commit_list;
-        public SortedList<string,commit_list_data> Get_commit_file(int index)
-        {
-            return Get_commit_file(Get_commit_SHA(index));
-        }
         public string Get_commit_SHA(int index)
         {
             if (_commit_list.Count <= index)
@@ -129,7 +126,7 @@ namespace FolderSync
         {
             List<commit_delta_data> ret = new List<commit_delta_data>();
 
-
+            return ret;
         }
         #endregion
 

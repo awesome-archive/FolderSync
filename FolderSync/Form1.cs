@@ -15,13 +15,17 @@ namespace FolderSync
         {
             InitializeComponent();
         }
-
+        public void OutputLog(repo.LogType type, string msg)
+        {
+            textBox1.Text += "[" + type + "] " + msg + "\r\n";
+        }
         private void Form1_Load(object sender, EventArgs e)
         {
             //repo.Create("C:/test1", "test");
             repo a = new repo("C:/test1/");
-            
-
+            a.Log += OutputLog;
+            //a.create_local_cache("D:\\mc.bilicraft.com");
+            a.create_local_cache("D:/xor_data/");
         }
     }
 }
