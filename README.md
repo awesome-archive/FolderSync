@@ -3,9 +3,9 @@
 其实就是有点仿git的托管方式<br/><br/>
 *第一次用c#有点小紧张*<br/>
 
-- Core Programming
+**目前处于编写阶段，还有一堆没完成的代码**<br/>
 
-规划的功能：
+规划的功能：<br/>
 ```
 push <repo name> <local addr/name> [-m <msg>] [-root <addr>="/"] [-f]
 pull <repo name> <local addr/name> [-root <addr>="/"] [-commit <SHA>|-i <index>] [-f]
@@ -25,6 +25,6 @@ freeze <repo name> <SHA>|-i <index>
 ```
 预计完坑时间: 寒假结束前
 <p align="right">
-Project 2016 - FolderSync
+Project 2016 - FolderSync<br/>
 pandasxd
 </p>

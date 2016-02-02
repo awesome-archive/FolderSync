@@ -36,6 +36,8 @@ namespace FolderSync
         public static string hex(byte[] arr)
         {
             StringBuilder sb = new StringBuilder();
+            if (arr == null)
+                return sb.ToString();
             for (int i = 0; i < arr.Length; i++)
                 sb.Append(arr.ElementAt(i).ToString("X2"));
 
@@ -43,6 +45,8 @@ namespace FolderSync
         }
         public static byte[] hex(string str)
         {
+            if (str == null)
+                return new byte[0];
             if ((str.Length % 2) != 0)
                 str += " ";
             byte[] ret = new byte[str.Length / 2];

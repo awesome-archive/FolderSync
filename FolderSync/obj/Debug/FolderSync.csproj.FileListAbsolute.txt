@@ -2,9 +2,9 @@ F:\CS\FolderSync\FolderSync\bin\Debug\FolderSync.exe
 F:\CS\FolderSync\FolderSync\bin\Debug\FolderSync.pdb
 F:\CS\FolderSync\FolderSync\bin\Debug\INIFileParser.dll
 F:\CS\FolderSync\FolderSync\bin\Debug\INIFileParser.xml
-F:\CS\FolderSync\FolderSync\obj\Debug\FolderSync.csprojResolveAssemblyReference.cache
 F:\CS\FolderSync\FolderSync\obj\Debug\FolderSync.Form1.resources
 F:\CS\FolderSync\FolderSync\obj\Debug\FolderSync.Properties.Resources.resources
 F:\CS\FolderSync\FolderSync\obj\Debug\FolderSync.csproj.GenerateResource.Cache
 F:\CS\FolderSync\FolderSync\obj\Debug\FolderSync.exe
 F:\CS\FolderSync\FolderSync\obj\Debug\FolderSync.pdb
+F:\CS\FolderSync\FolderSync\obj\Debug\FolderSync.csprojResolveAssemblyReference.cache

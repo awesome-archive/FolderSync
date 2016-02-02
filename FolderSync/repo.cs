@@ -52,7 +52,7 @@ namespace FolderSync
 
             #region /object
             Directory.CreateDirectory(path + "\\object");
-            for (int i = 0; i < 255; i++)
+            for (int i = 0; i < 256; i++)
                 Directory.CreateDirectory(path + "\\object\\" + i.ToString("X2").ToLower());
             #endregion
 
