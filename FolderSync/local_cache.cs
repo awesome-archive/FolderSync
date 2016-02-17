@@ -16,15 +16,17 @@ namespace FolderSync
             public string path; //相对路径
             public byte[] MD5;
             public DateTime modify_time; //文件最后修改时间
+            public long length;
             public int CompareTo(local_file_data data)
             {
                 return path.CompareTo(data.path);
             }
-            public local_file_data(string path, byte[] MD5, DateTime modify_time)
+            public local_file_data(string path, byte[] MD5, DateTime modify_time, long length)
             {
                 this.path = path;
                 this.MD5 = MD5;
                 this.modify_time = modify_time;
+                this.length = length;
             }
 	    }
         /// <summary>
@@ -79,6 +81,9 @@ namespace FolderSync
             List<local_file_data> ret = new List<local_file_data>();
             //将路径统一替换处理
             local_addr = format_addr(Local_Replace(format_addr(local_addr.ToLower())));
+
+            log_msg(LogType.DEBUG, "get file list in " + local_addr);
+
             System.Security.Cryptography.SHA1CryptoServiceProvider sha = new System.Security.Cryptography.SHA1CryptoServiceProvider();
             //计算路径的离散值,用于保存缓存文件
             string local_addr_sha = util.hex(sha.ComputeHash(System.Text.Encoding.Default.GetBytes(local_addr))).ToLower();
@@ -94,7 +99,7 @@ namespace FolderSync
             }
 
             //读取缓存文件
-            //文件结构很简单(所有数字类型的高位在上!),写入也同理
+            //文件结构很简单(所有数字类型的低位在上!),写入也同理
             //首先4B int类型的数据个数
             //然后就是循环的: 2B int的字符串字节数,后面跟指定的字符串
             //16B byte[]的文件MD5值
@@ -118,79 +123,74 @@ namespace FolderSync
                         data.path = "";
                     br.Read(data.MD5, 0, 16);
                     data.modify_time = new DateTime(br.ReadInt64());
+                    data.length = br.ReadInt64();
                     ret.Add(data);
-                }
+                } //for
 
 
-            }
+            } //using
 
-            int i_ptr = 0;
+            log_msg(LogType.DEBUG, "local cache has " + ret.Count + " file data");
+
+            int i_ptr = 0, j_ptr = 0;
             //下标比较,前提：要排序
             List<string> target_file_list = get_all_file(local_addr);
             target_file_list.Sort();
-            foreach (string file_name in target_file_list)
+
+            int last_iptr = -1;
+            FileInfo fi = null;
+            string rel_path = "";
+            //对已有列表进行对比
+            while (i_ptr < target_file_list.Count && j_ptr < ret.Count)
             {
-                //地址相对化
-                string rel_path = relative_addr(local_addr, file_name);
-                FileInfo fi = new FileInfo(file_name);
-                //读取缓存列表中对应的文件
-                local_file_data data = ret.ElementAtOrDefault(i_ptr);
-                //缓存列表中的文件数据为空,理应是缓存列表文件的数目少于目标文件夹的文件数目,添加到列表中
-                if (data.path == null)
+                if (last_iptr != i_ptr)
                 {
-                    data.path = rel_path;
-                    data.MD5 = calculate_md5(file_name);
-                    data.modify_time = fi.LastWriteTime;
-                    ret.Insert(i_ptr++, data);
-                    data = ret.ElementAtOrDefault(i_ptr);
-
-                    if (Log != null)
-                        Log(LogType.DEBUG, "+ " + rel_path);
+                    fi = new FileInfo(target_file_list[i_ptr]);
+                    rel_path = relative_addr(local_addr, target_file_list[i_ptr]);
+                    last_iptr = i_ptr;
                 }
-                else
+                
+                switch (string.Compare(target_file_list[i_ptr], ret[j_ptr].path, true))
                 {
-                    //删除缓存列表中多出的文件
-                    while ((i_ptr < ret.Count) && (string.Compare(ret.ElementAtOrDefault(i_ptr).path, rel_path) < 0))
-                    {
-                        if (Log != null)
-                            Log(LogType.DEBUG, "- " + ret.ElementAtOrDefault(i_ptr).path);
+                    case 1:
+                        ret.RemoveAt(j_ptr);
+                        
+                        break;
+                    case -1:
+                        local_file_data data = new local_file_data(rel_path, calculate_md5(target_file_list[i_ptr]), fi.LastWriteTime, fi.Length);
 
-                        ret.RemoveAt(i_ptr);
-                    }
-                    data = ret.ElementAtOrDefault(i_ptr);
-                    //缓存列表中缺少此文件,添加到缓存列表中
-                    if (string.Compare(data.path, rel_path) > 0)
-                    {
-                        data.path = rel_path;
-                        data.MD5 = calculate_md5(file_name);
-                        data.modify_time = fi.LastWriteTime;
-                        ret.Insert(i_ptr++, data);
-                        data = ret.ElementAtOrDefault(i_ptr);
-
-                        if (Log != null)
-                            Log(LogType.DEBUG, "+ " + rel_path);
-                    }
-                }
-                //已经出现在缓存列表中的,比较最后一次修改时间,若有不同,则更新缓存信息
-                if (string.Compare(data.path, rel_path) == 0)
-                {
-                    if (data.modify_time != fi.LastWriteTime)
-                    {
-                        data.MD5 = calculate_md5(file_name);
-                        data.modify_time = fi.LastWriteTime;
-                        ret.RemoveAt(i_ptr);
-                        ret.Insert(i_ptr, data);
-
-                        if (Log != null)
-                            Log(LogType.DEBUG, "~ " + rel_path);
-                    }
-                    i_ptr++;
+                        ret.Insert(++j_ptr, data);
+                        j_ptr++;
+                        i_ptr++;
+                        break;
+                    case 0:
+                        data = ret[j_ptr];
+                        if (fi.LastWriteTime != data.modify_time && fi.Length != data.length)
+                        {
+                            data = new local_file_data(rel_path, calculate_md5(target_file_list[i_ptr]), fi.LastWriteTime, fi.Length);
+                            ret[j_ptr] = data;
+                        }
+                        i_ptr++;
+                        j_ptr++;
+                        break;
+                    default:
+                        break;
                 }
             }
-
-            //数据排序
+            //删除多余的列表
+            ret.RemoveRange(j_ptr, ret.Count - j_ptr);
+            //添加到列表
+            for (; i_ptr < target_file_list.Count; i_ptr++)
+            {
+                fi = new FileInfo(target_file_list[i_ptr]);
+                rel_path = relative_addr(local_addr, target_file_list[i_ptr]);
+                ret.Add(new local_file_data(rel_path, calculate_md5(target_file_list[i_ptr]), fi.LastWriteTime, fi.Length));
+            }
             
+            //数据排序
             ret.Sort();
+
+            log_msg(LogType.DEBUG, "writing cache data (" + ret.Count + " file data)");
             //写入缓存数据
             fs = new FileStream(_phys_addr + "\\local\\" + local_addr_sha, FileMode.Create, FileAccess.Write);
             using (BinaryWriter bw = new BinaryWriter(fs))
@@ -203,6 +203,7 @@ namespace FolderSync
                     bw.Write(buf);
                     bw.Write(item.MD5);
                     bw.Write(item.modify_time.Ticks);
+                    bw.Write(item.length);
                 }
             }
             return ret;
@@ -213,6 +214,8 @@ namespace FolderSync
             System.Security.Cryptography.MD5CryptoServiceProvider md5_calc = new System.Security.Cryptography.MD5CryptoServiceProvider();
             //md5 calculate
             md5_calc.Initialize();
+
+            log_msg(LogType.DEBUG, "calculating file md5: " + file);
 
             FileStream fs = new FileStream(file, FileMode.Open, FileAccess.Read);
             const int buf_size = 1048576; //1MB缓冲区
@@ -249,7 +252,14 @@ namespace FolderSync
             md5_calc.Clear();
             return ret;
         }
-        //汇报计算MD5的进度,每读取1MB调用一次
+        /*
+         * ******  **    **  ******  **   **  ******
+         * **      **    **  **      ***  **    **
+         * ******  **    **  ******  ** * **    **
+         * **       **  **   **      **  ***    **
+         * ******     **     ******  **   **    **
+         */
+        //汇报计算MD5的进度
         public delegate void Calculating_MD5_Handler(string abs_path, long cur_pos, long file_len);
         public event Calculating_MD5_Handler Calculating_MD5;
 

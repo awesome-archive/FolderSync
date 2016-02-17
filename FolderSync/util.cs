@@ -1,4 +1,10 @@
-﻿using System;
+﻿//Project 2016 - Folder Sync v2
+//Author: pandasxd (https://github.com/qhgz2013/FolderSync)
+//
+//util.cs
+//description: 常用函数
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -39,14 +45,18 @@ namespace FolderSync
             if (arr == null)
                 return sb.ToString();
             for (int i = 0; i < arr.Length; i++)
-                sb.Append(arr.ElementAt(i).ToString("X2"));
+                sb.Append(arr[i].ToString("X2"));
 
             return sb.ToString();
         }
+        public static string hex(byte b)
+        {
+            return b.ToString("X2");
+        }
         public static byte[] hex(string str)
         {
-            if (str == null)
-                return new byte[0];
+            if (string.IsNullOrEmpty(str))
+                return null;
             if ((str.Length % 2) != 0)
                 str += " ";
             byte[] ret = new byte[str.Length / 2];
