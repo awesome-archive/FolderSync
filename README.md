@@ -12,10 +12,10 @@ pandasxd
 </p>
 <p align="center">
 来一张插画<br/>
-![这只是一张插图_(:з」∠)_](https://raw.githubusercontent.com/qhgz2013/FolderSync/master/34938673_p0.jpg)
+<img src="https://raw.githubusercontent.com/qhgz2013/FolderSync/master/34938673_p0.jpg"/>
 </p>
 <p align="center">
-[插画原图链接](http://www.pixiv.net/member_illust.php?mode=medium&illust_id=33681713)
+<a href="http://www.pixiv.net/member_illust.php?mode=medium&illust_id=33681713" target="_blank">插画原图链接</a>
 </p>
 
 <!-- 好端端的md为什么非要写成html啊不是蛋疼吗 -->
