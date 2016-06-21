@@ -1,0 +1,27 @@
+﻿文件同步脚本说明
+
+首先： 参数严格区分大小写！！看要求啊哈哈哈
+
+脚本格式
+
+version 版本号
+脚本版本声明，可忽略，用于以后兼容其他脚本，如今默认也只允许 version 1
+例: version 1
+
+sync 源文件夹 目标文件夹 [-H | -hidden 包括隐藏文件夹] [--ext 要排除的拓展名] [-+ext 要同步的文件拓展名] [-stachk 文件状态检测类型]
+同步两个文件夹内的所有文件
+注意，若文件夹包含空格，则必须用 '""' 将文件夹括起来，否则会将其从中间断开，视为两个参数
+
+可选参数:
+--ext 不包含的拓展名 如：不同步所有txt和jpg文件，则可以在后面附上"--ext .txt;.jpg"，注意拓展名之间要用分号隔开
+-+ext 仅包含的拓展名 如：只同步所有txt和jpg文件，则可以在后面附上"-+ext .txt;.jpg"，默认为"-+ext *"（包含全部拓展名）
+ 注意：目标文件夹会移除--ext后面的所有类型的文件，因为其不被包括在内（视为不存在，也不应该存在←_←）
+	   若对不含拓展名的文件进行操作，则为"--ext ;"、"--ext .txt;;.jpg"
+-H | -hidden 顾名思义，开启该选项则同步隐藏文件夹
+-stachk 文件状态检测，包括 stachk_md5(检验文件md5)，stachk_length(检验文件长度), stachk_last_modified(检验最后修改时间), stachk_created(检验最后创建时间), stachk_last_access(检验最后执行时间)
+ 注意：多个检测之间用分号隔开，默认为 "-stachk stachk_length;stachk_last_modified"
+例：sync "C:\folder with space" D:\folder_without_space -H --ext .db;.exe;.dll
+
+ script 脚本文件目录
+ 递归调用脚本文件
+ 例：script anotherScript.txt
