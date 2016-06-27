@@ -58,7 +58,9 @@ namespace FolderSync
              */
 
             //repo.Direct_Sync_File("F:/pixiv", "G:/pixiv", repository.FLAG_STACHK_DIRECT_SYNC_DEFAULT, false, new List<string>() { ".png" });
-            repo.Execute_Script_Text("  version  1 \n   sync  \"F:/pixiv\"  G:/pixiv -H    -+ext .png   ");
+            repo.Create_repository("D:/test1");
+            repo.Open("D:/test1");
+            repo.Dir_Create("/test");
         }
 
         private void on_file_copy_start(repository.File_Copy_Event_Arg e)
@@ -68,14 +70,14 @@ namespace FolderSync
             progressBar1.Maximum = (int)e.File_Length;
             //listView1.Items.Add(lvi);
 
-            label3.Text = "cur: 复制文件: " + e.File_Name + " [0 / " + e.File_Length + "]";
+            label3.Text = "cur: 复制文件: " + e.Origin_File_Name + " [0 / " + e.File_Length + "]";
 
             call_doevents();
         }
         private void on_file_copying(repository.File_Copy_Event_Arg e)
         {
             progressBar1.Value = (int)e.Current_Position;
-            label3.Text = "cur: 复制文件: " + e.File_Name + " [" + e.Current_Position + " / " + e.File_Length + "]";
+            label3.Text = "cur: 复制文件: " + e.Origin_File_Name + " [" + e.Current_Position + " / " + e.File_Length + "]";
 
             call_doevents();
         }

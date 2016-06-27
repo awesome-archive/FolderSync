@@ -30,9 +30,9 @@ namespace FolderSync
 
         //默认的直接同步文件检验标识(长度+最后修改时间)
         public const int FLAG_STACHK_DIRECT_SYNC_DEFAULT = FLAG_STACHK_LAST_MODIFIED_TIME | FLAG_STACHK_LENGTH;
-
+        
         /// <summary>
-        /// 同步文件夹，使两文件夹的数据保持一致
+        /// 同步文件夹，使两文件夹的数据保持一致（支持直接调用）
         /// </summary>
         /// <param name="origin">源文件夹的绝对路径</param>
         /// <param name="destination">目标文件夹的绝对路径</param>
@@ -111,7 +111,7 @@ namespace FolderSync
                 {
                     try
                     {
-                        Copy_File(odi.FullName, ddi.FullName, item);
+                        _Copy_File(odi.FullName + "/" + item, ddi.FullName + "/" + item);
                         suc = true;
                     }
                     catch (Exception ex)
@@ -142,7 +142,7 @@ namespace FolderSync
                 {
                     try
                     {
-                        Delete_File(ddi.FullName + '/' + item);
+                        _Delete_File(ddi.FullName + '/' + item);
                         suc = true;
                     }
                     catch (Exception ex)
@@ -175,7 +175,7 @@ namespace FolderSync
                 {
                     try
                     {
-                        file_skip = File_Validating(odi.FullName + '/' + item, ddi.FullName + '/' + item, STACHK_flag);
+                        file_skip = _File_Validating(odi.FullName + '/' + item, ddi.FullName + '/' + item, STACHK_flag);
                         suc = true;
                     }
                     catch (Exception ex)
@@ -205,7 +205,7 @@ namespace FolderSync
                 {
                     try
                     {
-                        Copy_File(odi.FullName, ddi.FullName, item);
+                        _Copy_File(odi.FullName + "/" + item, ddi.FullName + "/" + item);
                         suc = true;
                     }
                     catch (Exception ex)
@@ -264,22 +264,25 @@ namespace FolderSync
         /// <param name="origin">源文件夹的根目录</param>
         /// <param name="destination">目标文件夹的根目录</param>
         /// <param name="file_name">文件名</param>
-        private void Copy_File(string origin, string destination, string file_name)
+        private void _Copy_File(string origin, string destination)
         {
             try
             {
                 //文件数据
-                FileInfo ofi = new FileInfo(origin + '/' + file_name);
-                FileInfo dfi = new FileInfo(destination + '/' + file_name);
+                FileInfo ofi = new FileInfo(origin);
+                FileInfo dfi = new FileInfo(destination);
 
                 //构造文件复制的事件参数
                 File_Copy_Event_Arg e = new File_Copy_Event_Arg();
                 e.Current_Position = 0;
-                e.Destination_Full_File_Name = dfi.FullName;
-                e.File_Extension = ofi.Extension;
                 e.File_Length = ofi.Length;
-                e.File_Name = file_name;
+                e.Origin_File_Extension = ofi.Extension;
+                e.Destination_File_Extension = dfi.Extension;
+                e.Origin_File_Name = ofi.Name;
+                e.Destination_File_Name = dfi.Name;
                 e.Origin_Full_File_Name = ofi.FullName;
+                e.Destination_Full_File_Name = dfi.FullName;
+                
 
                 if (File_Begin_Copy_Event != null)
                     File_Begin_Copy_Event(e);
@@ -335,7 +338,7 @@ namespace FolderSync
         /// 函数如其名,就是删除文件
         /// </summary>
         /// <param name="file">要删除的文件</param>
-        private void Delete_File(string file)
+        private void _Delete_File(string file)
         {
             FileInfo fi = new FileInfo(file);
 
@@ -356,7 +359,7 @@ namespace FolderSync
         /// <param name="destination">目标文件</param>
         /// <param name="STACHK_flag">验证标识</param>
         /// <returns></returns>
-        private bool File_Validating(string origin, string destination, int STACHK_flag)
+        private bool _File_Validating(string origin, string destination, int STACHK_flag)
         {
             var ofi = new FileInfo(origin);
             var dfi = new FileInfo(destination);
@@ -384,7 +387,7 @@ namespace FolderSync
 
             if ((STACHK_flag & FLAG_STACHK_MD5) != 0)
             {
-                byte[] omd5 = Get_File_MD5(ofi.FullName), dmd5 = Get_File_MD5(dfi.FullName);
+                byte[] omd5 = _Get_File_MD5(ofi.FullName), dmd5 = _Get_File_MD5(dfi.FullName);
                 if (omd5 == null || dmd5 == null) throw new InvalidDataException("计算文件MD5值出错");
                 if (Others.Hex(omd5) != Others.Hex(dmd5)) return false;
             }
@@ -417,7 +420,7 @@ namespace FolderSync
         /// </summary>
         /// <param name="file">文件名</param>
         /// <returns>文件的MD5值(若出现异常则返回null)</returns>
-        private byte[] Get_File_MD5(string file)
+        private byte[] _Get_File_MD5(string file)
         {
             byte[] ret = null;
 
@@ -486,6 +489,45 @@ namespace FolderSync
 
             return ret;
         }
-
+        /// <summary>
+        /// 删除文件夹
+        /// </summary>
+        /// <param name="dir">要删除的文件夹</param>
+        /// <param name="include_files">是否只删除文件，该标识为true时，目标文件夹及其子文件夹不删除</param>
+        /// <param name="include_sub_dir">是否只删除子文件夹，该标识为true时，目标文件夹的文件都不删除</param>
+        public void Delete_Directory(string dir, bool include_files = true, bool include_sub_dir = true)
+        {
+            var di = new DirectoryInfo(dir);
+            //删除文件
+            if (include_files)
+                foreach (FileInfo item in di.GetFiles())
+                    item.Delete();
+            //删除子目录
+            if (include_sub_dir)
+                foreach (DirectoryInfo item in di.GetDirectories())
+                    Delete_Directory(item.FullName);
+            //删除本目录（只有目录为空时才成功）
+            di.Delete();
+        }
+        /// <summary>
+        /// 从总路径中获取文件名
+        /// </summary>
+        /// <param name="full_path">文件的绝对路径</param>
+        /// <returns></returns>
+        private string _Get_File_Name(string full_path)
+        {
+            string[] temp = full_path.Split('/');
+            return temp.Length > 0 ? temp[temp.Length - 1] : "";
+        }
+        /// <summary>
+        /// 从总路径中获取文件拓展名
+        /// </summary>
+        /// <param name="full_path">文件的绝对路径</param>
+        /// <returns></returns>
+        private string _Get_Extension(string full_path)
+        {
+            string[] temp = _Get_File_Name(full_path).Split('.');
+            return temp.Length > 0 ? "." + temp[temp.Length - 1] : "";
+        }
     }
 }

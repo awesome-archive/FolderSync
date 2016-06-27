@@ -4,11 +4,11 @@
 
 脚本格式
 
-version 版本号
+·version 版本号
 脚本版本声明，可忽略，用于以后兼容其他脚本，如今默认也只允许 version 1
 例: version 1
 
-sync 源文件夹 目标文件夹 [-H | -hidden 包括隐藏文件夹] [--ext 要排除的拓展名] [-+ext 要同步的文件拓展名] [-stachk 文件状态检测类型]
+·sync 源文件夹 目标文件夹 [-H | -hidden 包括隐藏文件夹] [--ext 要排除的拓展名] [-+ext 要同步的文件拓展名] [-stachk 文件状态检测类型]
 同步两个文件夹内的所有文件
 注意，若文件夹包含空格，则必须用 '""' 将文件夹括起来，否则会将其从中间断开，视为两个参数
 
@@ -22,6 +22,14 @@ sync 源文件夹 目标文件夹 [-H | -hidden 包括隐藏文件夹] [--ext �
  注意：多个检测之间用分号隔开，默认为 "-stachk stachk_length;stachk_last_modified"
 例：sync "C:\folder with space" D:\folder_without_space -H --ext .db;.exe;.dll
 
- script 脚本文件目录
+·delete 目标文件夹 [-D | -dir] [-F | -file]
+默认删除目标文件夹
+可选参数：
+-D | -dir 仅删除子文件夹及其所有文件，不删除该目标文件夹的文件，不删除目标文件夹
+-F | -file 仅删除文件，不删除子文件夹及里面的文件，不删除目标文件夹
+例：delete "C:\"
+(斜眼笑)
+
+·script 脚本文件目录
  递归调用脚本文件
  例：script anotherScript.txt

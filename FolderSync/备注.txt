@@ -1,0 +1,27 @@
+﻿文件系统部分：
+
+
+current.db
+目前的文件目录数据
+
+每个文件夹定义一个UID，为全局唯一标识
+
+table File(int folderUID, string name, byte[16] md5, byte type)
+文件列表，由folderUID决定，type代表类型, >=128代表文件夹，默认为0
+在文件夹情况下，md5由folderUID代替
+
+table FileData(int folderUID, string name, string ext_data)
+同上
+
+
+
+commit_list.db
+文件索引版本数据
+
+table commit_links(string cFrom, string cTo)
+
+
+file_usage.db
+文件引用次数
+
+table file_refs(byte[16] md5, int ref_times)

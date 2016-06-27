@@ -13,8 +13,10 @@ namespace FolderSync
         //文件复制事件参数
         public struct File_Copy_Event_Arg
         {
-            public string File_Name; //不包含路径的文件名
-            public string File_Extension; //文件拓展名
+            public string Origin_File_Name; //不包含路径的文件名
+            public string Destination_File_Name;
+            public string Origin_File_Extension; //文件拓展名
+            public string Destination_File_Extension;
             public string Origin_Full_File_Name; //源文件的绝对路径
             public string Destination_Full_File_Name; //目标文件的绝对路径
             public long File_Length; //文件长度
@@ -81,5 +83,9 @@ namespace FolderSync
         public delegate void Directory_Deleted_Event_Handler(string directory);
         public event Directory_Deleted_Event_Handler Directory_Deleted_Event;
 
+
+        //仓库初始化时询问文件夹存在时是删除文件夹内所有文件还是选择其他文件夹
+        public delegate void Ask_For_Delete_Directory_Handler(string directory, ref bool delete);
+        public event Ask_For_Delete_Directory_Handler Ask_For_Delete_Directory;
     }
 }
